@@ -141,13 +141,7 @@ public class GraKPN extends JFrame {
         dodajPolaGraczy();
         dodajPrzyciskWyboru();
         ustawPunktacjeGraczy();
-        test();
     }
-    void test()
-    {
-        System.out.println("test");
-    }
-
     
     JMenuBar pasekMenu = new JMenuBar();
     
