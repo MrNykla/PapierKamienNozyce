@@ -350,12 +350,12 @@ public class GraKPN extends JFrame {
         
         for(int i = 0 ; i < punktacjaGraczy.length ; i++)
         {
-            String pustyTekst =  "              Gracz " + (i + 1) + " : " + punktyGracza[i];
+            String punkty =  "              Gracz " + (i + 1) + " : " + punktyGracza[i];
             
             if( i >= gracze )
-                pustyTekst = "";
+                punkty = "";
                 
-                punktacjaGraczy[i].setText(pustyTekst);
+                punktacjaGraczy[i].setText(punkty);
                 punktacjaGraczy[i].setForeground(Color.BLUE);
         }
     }
