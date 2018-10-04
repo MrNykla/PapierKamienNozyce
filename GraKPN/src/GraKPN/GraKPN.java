@@ -1,17 +1,24 @@
 package GraKPN;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -20,9 +27,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTextField;
 
-public class GraKPN extends JFrame {
+public class GraKPN extends JFrame 
 
+{
     public GraKPN()
     {
         super("Kamien Papier Nozyce");
@@ -41,15 +50,35 @@ public class GraKPN extends JFrame {
         this.setResizable(false);
         initComponents();
     }
-        
-
+    
     void initComponents() 
     {
+        try 
+        {
+            plikNazwaGracza.createNewFile();
+        } 
+        catch (IOException ex) 
+        {
+            System.out.println(ex.getMessage());
+        }
+        
+        if(plikNazwaGracza.length() == 0 || plikNazwaGracza.length() > 9)
+            new NazwaGracza(this).setVisible(true);
+        
         this.setJMenuBar(pasekMenu);
         
         JMenu plik = pasekMenu.add(new JMenu("Ustawienia"));
         
         JMenuItem resetPunktow = plik.add(new JMenuItem("Resetuj Punkty"));
+        
+        JMenuItem nazwaGracza = plik.add(new JMenuItem("Zmień Nazwe Gracza"));
+        
+        nazwaGracza.addActionListener((ActionEvent ae) -> 
+        {
+            new NazwaGracza(this).setVisible(true);
+             ustawPunktacjeGraczy();
+             resetPunktow.doClick();
+        });
         
         panelWynikow.add(mojWynik = new JLabel());
        
@@ -72,7 +101,6 @@ public class GraKPN extends JFrame {
                 punktyGracza[i] = 0;
                 poleGracza[i].setIcon(new ImageIcon("NiebieskieTlo.gif"));
             }
-           
             ustawPunktacjeGraczy();
         });
         
@@ -93,21 +121,15 @@ public class GraKPN extends JFrame {
         
         JMenuItem informacje = plik.add(new JMenuItem("Informacje"));
         
-        informacje.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) 
-            {
-                JOptionPane.showConfirmDialog(rootPane, " Gra \"Kamień Papier Nożyce \"" + " \n" + " Wersja : 1.0" + "\n" + " Autor : Dominik Michnik" , "Informacje" , -1);
-            }
+        informacje.addActionListener((ActionEvent ae) -> 
+        {
+            JOptionPane.showConfirmDialog(rootPane, " Gra \"Kamień Papier Nożyce \"" + " \n" + " Wersja : 1.0" + "\n" + " Autor : Dominik Michnik" , "Informacje" , -1);
         });
         JMenuItem zamknij = plik.add(new JMenuItem("Zamknij"));
         
-        zamknij.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) 
-            {
-                System.exit(0);
-            }
+        zamknij.addActionListener((ActionEvent ae) -> 
+        {
+            System.exit(0);
         });
         
         this.getContentPane().setLayout(null);
@@ -143,6 +165,8 @@ public class GraKPN extends JFrame {
         ustawPunktacjeGraczy();
     }
     
+    File plikNazwaGracza = new File("Nazwa Gracza.txt");
+    
     JMenuBar pasekMenu = new JMenuBar();
     
     JRadioButtonMenuItem[] ileGraczy = new JRadioButtonMenuItem[2];
@@ -155,7 +179,6 @@ public class GraKPN extends JFrame {
     JPanel panelGraczy = new JPanel();
     JPanel panelWyboru = new JPanel();
     
-    
     JLabel[] poleGracza = new JLabel[9];
     JButton[] przyciskWyboru = new JButton[3];
     JButton reset = new JButton("Resetuj Punkty");
@@ -164,7 +187,6 @@ public class GraKPN extends JFrame {
     JLabel mojWynik = new JLabel();
     int mojePunkty= 0;
     int ileRazyRemis= 0;
-    
     
     int poleGracza1;
     int poleGracza2;
@@ -179,7 +201,6 @@ public class GraKPN extends JFrame {
         for(int i = 0 ; i < 9; i++)
         {
             panelGraczy.add(poleGracza[i] = new JLabel());
-
             poleGracza[i].setIcon(new ImageIcon("NiebieskieTlo.gif"));
         }
     }
@@ -331,7 +352,6 @@ public class GraKPN extends JFrame {
                     punktyGracza[1]++;
                 }
         }
-        
         ustawPunktacjeGraczy();
     }
     
@@ -342,21 +362,39 @@ public class GraKPN extends JFrame {
 
     void ustawPunktacjeGraczy()
     {
+        String nazwaGracza = "";
+        int czcionka = 17;
         
-        etykietaRemisu.setText("              Remis : " + ileRazyRemis);
+        try 
+        {
+            BufferedReader odczyt = new BufferedReader( new FileReader(plikNazwaGracza));
+            nazwaGracza = odczyt.readLine();
+            odczyt.close();
+        }
+        catch (IOException ex) 
+        {
+           System.out.println(ex.getMessage());
+        }
+        
+        etykietaRemisu.setFont(new Font("Monospaced", 1, czcionka));
+        mojWynik.setFont(new Font("Monospaced", 1, czcionka));
+        
+        etykietaRemisu.setText(" Remis :" + ileRazyRemis);
         etykietaRemisu.setForeground(Color.BLUE);
-        mojWynik.setText("              JA          : " + mojePunkty);
+        
+        mojWynik.setText( " " + nazwaGracza + " :" + mojePunkty);
         mojWynik.setForeground(Color.BLUE);
         
         for(int i = 0 ; i < punktacjaGraczy.length ; i++)
         {
-            String punkty =  "              Gracz " + (i + 1) + " : " + punktyGracza[i];
+            String punkty =  " Komputer " + (i + 1) + ":" + punktyGracza[i];
             
             if( i >= gracze )
                 punkty = "";
                 
                 punktacjaGraczy[i].setText(punkty);
                 punktacjaGraczy[i].setForeground(Color.BLUE);
+                punktacjaGraczy[i].setFont(new Font("Monospaced", 1, czcionka));
         }
     }
     
@@ -364,4 +402,78 @@ public class GraKPN extends JFrame {
         
         new GraKPN().setVisible(true);
     }
+}
+
+class NazwaGracza extends JDialog
+{
+    public NazwaGracza(GraKPN rodzic) 
+    {
+        super(rodzic , true);
+        this.setTitle("Nazwa Gracza");
+        
+        this.setSize(250, 150);
+       
+        int pozycjaXrodzica = rodzic.getX() + (rodzic.getSize().width / 2);
+        int pozycjaYrodzica = rodzic.getY() + (rodzic.getSize().height / 2);
+        
+        int pozycjaX = this.getSize().width / 2;
+        int pozycjaY = this.getSize().height / 2;
+        
+        this.setLocation(pozycjaXrodzica - pozycjaX , pozycjaYrodzica - pozycjaY);
+        this.setDefaultCloseOperation(1);
+        this.setResizable(false);
+        initComponents(rodzic);
+    }
+    
+    void initComponents(GraKPN rodzic)
+    {
+        this.getContentPane().add(etykieta);
+        this.getContentPane().add(poleTekstowe);
+        this.getContentPane().add(zapiszNazwe);
+        
+        this.setLayout(null);
+        
+        etykieta.setSize(200 ,20);
+        etykieta.setLocation(60, 10);
+        
+        poleTekstowe.setSize(115,20);
+        poleTekstowe.setLocation(60, 40);
+        
+        zapiszNazwe.setSize(115,20);
+        zapiszNazwe.setLocation(60, 70);
+        NazwaGracza odwolanie = this;
+        
+        zapiszNazwe.addActionListener((ActionEvent ae) -> 
+        {
+            try 
+            {
+                if(poleTekstowe.getText().length() != 0 && poleTekstowe.getText().length() <= 9)
+                {
+                    BufferedWriter nazwaGracza = new BufferedWriter(new FileWriter(rodzic.plikNazwaGracza));
+                    nazwaGracza.write(poleTekstowe.getText());
+                    nazwaGracza.close();
+                    odwolanie.dispose();
+                }
+                else if(poleTekstowe.getText().length() == 0)
+                {
+                    etykieta.setText("Pole Nie Moze Byc Puste");
+                    etykieta.setForeground(Color.RED);
+                }
+                else if(poleTekstowe.getText().length() > 9)
+                {
+                    etykieta.setText("Nazwa Gracza Jest Za Długa");
+                    etykieta.setForeground(Color.RED);
+                }
+            } 
+            catch (IOException ex) 
+            {
+                System.out.println(ex.getMessage());
+            }
+        });
+    }
+    
+    JLabel etykieta = new JLabel("Podaj Nazwe Gracza");
+    JTextField poleTekstowe = new JTextField();
+    JButton zapiszNazwe = new JButton("Zapisz Nazwę");
+    
 }
